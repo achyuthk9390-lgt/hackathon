@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detection Results</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<h2>Fraud Rings Detected</h2>
+
+<table>
+<tr>
+<th>Ring ID</th>
+<th>Pattern Type</th>
+<th>Member Count</th>
+<th>Risk Score</th>
+<th>Members</th>
+</tr>
+
+{% for ring in fraud_rings %}
+<tr>
+<td>{{ ring.ring_id }}</td>
+<td>{{ ring.pattern_type }}</td>
+<td>{{ ring.member_accounts|length }}</td>
+<td>{{ ring.risk_score }}</td>
+<td>{{ ring.member_accounts }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+<a href="/download">Download JSON Report</a>
+
+</body>
+</html>
