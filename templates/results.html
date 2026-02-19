@@ -9,54 +9,121 @@
     <!-- Vis Network -->
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
-    <link rel="stylesheet" href="/static/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+        }
+
+        .dashboard {
+            padding: 40px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            flex: 1;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(15px);
+            text-align: center;
+        }
+
+        .card.red { background: rgba(255,0,0,0.15); }
+        .card.yellow { background: rgba(255,204,0,0.15); }
+
+        .counter {
+            font-size: 30px;
+            margin-top: 10px;
+        }
+
+        .large-card {
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(15px);
+        }
+
+        #network {
+            height: 500px;
+            margin-top: 20px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .red-dot { background: #ff3b3b; }
+        .yellow-dot { background: #ffcc00; }
+        .green-dot { background: #00cc66; }
+    </style>
 </head>
 
-<body class="dark-theme">
+<body>
 
 <div class="dashboard">
 
-    <h1 class="title">📊 Financial Crime Intelligence Dashboard</h1>
+    <h1>📊 Financial Crime Intelligence Dashboard</h1>
 
-    <!-- ================= SUMMARY CARDS ================= -->
-
-    <div class="card-grid">
-
-        <div class="glass-card">
+    <!-- SUMMARY -->
+    <div class="grid">
+        <div class="card">
             <h3>Total Accounts</h3>
-            <h2 class="counter" data-target="{{ graph_data.nodes|length }}">0</h2>
+            <div class="counter" data-target="{{ graph_data.nodes|length }}">0</div>
         </div>
 
-        <div class="glass-card red-glass">
+        <div class="card red">
             <h3>Fraud Rings</h3>
-            <h2 class="counter" data-target="{{ fraud_rings|length }}">0</h2>
+            <div class="counter" data-target="{{ fraud_rings|length }}">0</div>
         </div>
 
-        <div class="glass-card yellow-glass">
+        <div class="card yellow">
             <h3>Suspicious Accounts</h3>
-            <h2 class="counter" data-target="{{ suspicious_accounts|length }}">0</h2>
+            <div class="counter" data-target="{{ suspicious_accounts|length }}">0</div>
         </div>
-
     </div>
 
-    <!-- ================= PIE CHART ================= -->
-
-    <div class="glass-card large-card">
+    <!-- PIE CHART -->
+    <div class="large-card">
         <h2>📈 Risk Distribution</h2>
         <canvas id="riskChart"></canvas>
     </div>
 
-    <!-- ================= GRAPH ================= -->
-
-    <div class="glass-card large-card">
+    <!-- GRAPH -->
+    <div class="large-card">
         <h2>🌐 Transaction Network</h2>
 
-        <!-- LEGEND -->
         <div class="legend">
-            <span class="legend-item"><span class="dot red"></span> Fraud</span>
-            <span class="legend-item"><span class="dot yellow"></span> Medium</span>
-            <span class="legend-item"><span class="dot green"></span> Safe</span>
+            <div><span class="dot red-dot"></span>Fraud</div>
+            <div><span class="dot yellow-dot"></span>Medium</div>
+            <div><span class="dot green-dot"></span>Safe</div>
         </div>
 
         <div id="network"></div>
@@ -65,32 +132,13 @@
 </div>
 
 <script>
-/* ================= ANIMATED COUNTERS ================= */
+/* ========== SAFE GRAPH DATA ========== */
 
-const counters = document.querySelectorAll('.counter');
+const graphData = {{ graph_data | tojson | safe }};
 
-counters.forEach(counter => {
-    const update = () => {
-        const target = +counter.getAttribute('data-target');
-        const current = +counter.innerText;
+/* If risk_map doesn't exist, use empty object */
+const riskMap = graphData.risk_map || {};
 
-        const increment = target / 50;
-
-        if (current < target) {
-            counter.innerText = Math.ceil(current + increment);
-            setTimeout(update, 20);
-        } else {
-            counter.innerText = target;
-        }
-    };
-
-    update();
-});
-
-
-/* ================= GRAPH ================= */
-
-const graphData = {{ graph_data | tojson }};
 let nodes = new vis.DataSet();
 let edges = new vis.DataSet();
 
@@ -98,9 +146,9 @@ let fraudCount = 0;
 let mediumCount = 0;
 let safeCount = 0;
 
-graphData.nodes.forEach(node => {
+(graphData.nodes || []).forEach(node => {
 
-    let risk = graphData.risk_map[node] || 0;
+    let risk = riskMap[node] || 0;
     let color = "#00cc66";
 
     if (risk >= 80) {
@@ -116,14 +164,11 @@ graphData.nodes.forEach(node => {
     nodes.add({
         id: node,
         label: node,
-        color: {
-            background: color,
-            border: "#ffffff"
-        }
+        color: color
     });
 });
 
-graphData.edges.forEach(edge => {
+(graphData.edges || []).forEach(edge => {
     edges.add({
         from: edge[0],
         to: edge[1]
@@ -134,44 +179,41 @@ new vis.Network(
     document.getElementById("network"),
     { nodes: nodes, edges: edges },
     {
-        nodes: {
-            shape: "dot",
-            size: 18,
-            font: { color: "white" }
-        },
-        edges: {
-            arrows: "to",
-            color: { color: "#aaa" }
-        },
-        physics: { stabilization: false }
+        nodes: { shape: "dot", size: 16 },
+        edges: { arrows: "to" }
     }
 );
 
+/* ========== PIE CHART ========== */
 
-/* ================= PIE CHART ================= */
-
-const ctx = document.getElementById('riskChart');
-
-new Chart(ctx, {
+new Chart(document.getElementById("riskChart"), {
     type: 'pie',
     data: {
         labels: ['Fraud', 'Medium', 'Safe'],
         datasets: [{
             data: [fraudCount, mediumCount, safeCount],
-            backgroundColor: [
-                '#ff3b3b',
-                '#ffcc00',
-                '#00cc66'
-            ]
+            backgroundColor: ['#ff3b3b','#ffcc00','#00cc66']
         }]
-    },
-    options: {
-        plugins: {
-            legend: {
-                labels: { color: 'white' }
-            }
-        }
     }
+});
+
+/* ========== ANIMATED COUNTERS ========== */
+
+document.querySelectorAll('.counter').forEach(counter => {
+    const target = +counter.getAttribute('data-target');
+    let count = 0;
+
+    const update = () => {
+        if (count < target) {
+            count += Math.ceil(target / 50);
+            counter.innerText = count;
+            setTimeout(update, 20);
+        } else {
+            counter.innerText = target;
+        }
+    };
+
+    update();
 });
 </script>
 
