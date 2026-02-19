@@ -1,87 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Detection Results</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <title>Fraud Detection Results</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 <body>
 
 <h2>Fraud Rings Detected</h2>
 
-{% if fraud_rings|length == 0 %}
-<p>No fraud rings detected.</p>
-{% else %}
-
-<table>
-<tr>
-<th>Ring ID</th>
-<th>Pattern Type</th>
-<th>Member Count</th>
-<th>Risk Score</th>
-<th>Members</th>
-</tr>
-
-{% for ring in fraud_rings %}
-<tr>
-<td>{{ ring.ring_id }}</td>
-<td>{{ ring.pattern_type }}</td>
-<td>{{ ring.member_accounts|length }}</td>
-<td>{{ ring.risk_score }}</td>
-<td>{{ ring.member_accounts }}</td>
-</tr>
-{% endfor %}
+{% if fraud_rings %}
+<table border="1">
+    <tr>
+        <th>Ring ID</th>
+        <th>Pattern Type</th>
+        <th>Member Count</th>
+        <th>Risk Score</th>
+        <th>Members</th>
+    </tr>
+    {% for ring in fraud_rings %}
+    <tr>
+        <td>{{ ring.ring_id }}</td>
+        <td>{{ ring.pattern_type }}</td>
+        <td>{{ ring.member_accounts|length }}</td>
+        <td>{{ ring.risk_score }}</td>
+        <td>{{ ring.member_accounts }}</td>
+    </tr>
+    {% endfor %}
 </table>
-
+{% else %}
+<p>No Fraud Rings Detected</p>
 {% endif %}
 
-<br>
+<br><br>
+
+<h2>Suspicious Accounts</h2>
+
+{% if suspicious_accounts %}
+<table border="1">
+    <tr>
+        <th>Account ID</th>
+        <th>Suspicion Score</th>
+        <th>Detected Patterns</th>
+        <th>Ring ID</th>
+    </tr>
+    {% for acc in suspicious_accounts %}
+    <tr>
+        <td>{{ acc.account_id }}</td>
+        <td>{{ acc.suspicion_score }}</td>
+        <td>{{ acc.detected_patterns }}</td>
+        <td>{{ acc.ring_id }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No Suspicious Accounts</p>
+{% endif %}
+
+<br><br>
+
 <a href="/download">Download JSON Report</a>
 
-<hr>
+<br><br>
 
-<h2>Transaction Graph</h2>
-
-<div id="network" style="height: 600px; border: 1px solid white;"></div>
+<h2>Transaction Network Graph</h2>
+<div id="network" style="height: 500px; border:1px solid black;"></div>
 
 <script>
     const graphData = {{ graph_data | tojson }};
-    const suspiciousAccounts = {{ suspicious_accounts | tojson }};
 
-    let suspiciousSet = new Set(
-        suspiciousAccounts.map(acc => acc.account_id)
-    );
+    let nodes = new vis.DataSet();
+    let edges = new vis.DataSet();
 
-    let nodes = graphData.nodes.map(node => ({
-        id: node,
-        label: node,
-        color: suspiciousSet.has(node) ? "red" : "#22c55e"
-    }));
+    graphData.nodes.forEach(node => {
 
-    let edges = graphData.edges.map(edge => ({
-        from: edge[0],
-        to: edge[1],
-        arrows: "to"
-    }));
+        let risk = graphData.risk_map[node] || 0;
+        let color = "green";
 
-    const container = document.getElementById("network");
+        if (risk >= 80) {
+            color = "red";
+        } else if (risk >= 40) {
+            color = "orange";
+        }
 
-    const data = {
-        nodes: new vis.DataSet(nodes),
-        edges: new vis.DataSet(edges)
-    };
+        nodes.add({
+            id: node,
+            label: node,
+            color: color
+        });
+    });
 
-    const options = {
+    graphData.edges.forEach(edge => {
+        edges.add({
+            from: edge[0],
+            to: edge[1]
+        });
+    });
+
+    let container = document.getElementById("network");
+    let data = { nodes: nodes, edges: edges };
+
+    let options = {
         nodes: {
             shape: "dot",
-            size: 15,
-            font: { color: "white" }
+            size: 18,
+            font: { size: 14 }
         },
         edges: {
-            color: "white"
+            arrows: "to"
         },
         physics: {
-            stabilization: true
+            stabilization: false
         }
     };
 
