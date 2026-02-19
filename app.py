@@ -67,7 +67,14 @@ def upload_file():
 
     df = pd.read_csv(filepath)
 
-    required_columns = {"transaction_id", "sender_id", "receiver_id", "amount", "timestamp"}
+    required_columns = {
+        "transaction_id",
+        "sender_id",
+        "receiver_id",
+        "amount",
+        "timestamp"
+    }
+
     if not required_columns.issubset(df.columns):
         return "Invalid CSV format. Please follow required structure."
 
@@ -99,19 +106,18 @@ def upload_file():
 
         ring_counter += 1
 
-    # -------- Fan Patterns -------- #
+    # -------- Fan Pattern Detection -------- #
     fan_patterns = detect_fan_patterns(G)
 
     for account, patterns in fan_patterns.items():
         suspicious_dict[account].extend(patterns)
 
-    # -------- Build suspicious_accounts JSON -------- #
+    # -------- Build Suspicious Accounts JSON -------- #
     suspicious_accounts = []
 
     for account, patterns in suspicious_dict.items():
         suspicion_score = calculate_score(patterns)
 
-        # Find ring_id (if part of cycle)
         ring_id = "N/A"
         for ring in fraud_rings:
             if account in ring["member_accounts"]:
@@ -125,7 +131,6 @@ def upload_file():
             "ring_id": ring_id
         })
 
-    # Sort descending
     suspicious_accounts = sorted(
         suspicious_accounts,
         key=lambda x: x["suspicion_score"],
@@ -150,10 +155,17 @@ def upload_file():
     with open(output_path, "w") as f:
         json.dump(result_json, f, indent=4)
 
+    # -------- Graph Data For Visualization -------- #
+    graph_data = {
+        "nodes": list(G.nodes()),
+        "edges": list(G.edges())
+    }
+
     return render_template(
         "results.html",
         fraud_rings=fraud_rings,
-        suspicious_accounts=suspicious_accounts
+        suspicious_accounts=suspicious_accounts,
+        graph_data=graph_data
     )
 
 
