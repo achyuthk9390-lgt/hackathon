@@ -1,119 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Fraud Detection Results</title>
+    <title>Fraud Detection Dashboard</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Vis Network -->
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
 
-<h2>Fraud Rings Detected</h2>
+<body class="dark-theme">
 
-{% if fraud_rings %}
-<table border="1">
-    <tr>
-        <th>Ring ID</th>
-        <th>Pattern Type</th>
-        <th>Member Count</th>
-        <th>Risk Score</th>
-        <th>Members</th>
-    </tr>
-    {% for ring in fraud_rings %}
-    <tr>
-        <td>{{ ring.ring_id }}</td>
-        <td>{{ ring.pattern_type }}</td>
-        <td>{{ ring.member_accounts|length }}</td>
-        <td>{{ ring.risk_score }}</td>
-        <td>{{ ring.member_accounts }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
-<p>No Fraud Rings Detected</p>
-{% endif %}
+<div class="dashboard">
 
-<br><br>
+    <h1 class="title">📊 Financial Crime Intelligence Dashboard</h1>
 
-<h2>Suspicious Accounts</h2>
+    <!-- ================= SUMMARY CARDS ================= -->
 
-{% if suspicious_accounts %}
-<table border="1">
-    <tr>
-        <th>Account ID</th>
-        <th>Suspicion Score</th>
-        <th>Detected Patterns</th>
-        <th>Ring ID</th>
-    </tr>
-    {% for acc in suspicious_accounts %}
-    <tr>
-        <td>{{ acc.account_id }}</td>
-        <td>{{ acc.suspicion_score }}</td>
-        <td>{{ acc.detected_patterns }}</td>
-        <td>{{ acc.ring_id }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
-<p>No Suspicious Accounts</p>
-{% endif %}
+    <div class="card-grid">
 
-<br><br>
+        <div class="glass-card">
+            <h3>Total Accounts</h3>
+            <h2 class="counter" data-target="{{ graph_data.nodes|length }}">0</h2>
+        </div>
 
-<a href="/download">Download JSON Report</a>
+        <div class="glass-card red-glass">
+            <h3>Fraud Rings</h3>
+            <h2 class="counter" data-target="{{ fraud_rings|length }}">0</h2>
+        </div>
 
-<br><br>
+        <div class="glass-card yellow-glass">
+            <h3>Suspicious Accounts</h3>
+            <h2 class="counter" data-target="{{ suspicious_accounts|length }}">0</h2>
+        </div>
 
-<h2>Transaction Network Graph</h2>
-<div id="network" style="height: 500px; border:1px solid black;"></div>
+    </div>
+
+    <!-- ================= PIE CHART ================= -->
+
+    <div class="glass-card large-card">
+        <h2>📈 Risk Distribution</h2>
+        <canvas id="riskChart"></canvas>
+    </div>
+
+    <!-- ================= GRAPH ================= -->
+
+    <div class="glass-card large-card">
+        <h2>🌐 Transaction Network</h2>
+
+        <!-- LEGEND -->
+        <div class="legend">
+            <span class="legend-item"><span class="dot red"></span> Fraud</span>
+            <span class="legend-item"><span class="dot yellow"></span> Medium</span>
+            <span class="legend-item"><span class="dot green"></span> Safe</span>
+        </div>
+
+        <div id="network"></div>
+    </div>
+
+</div>
 
 <script>
-    const graphData = {{ graph_data | tojson }};
+/* ================= ANIMATED COUNTERS ================= */
 
-    let nodes = new vis.DataSet();
-    let edges = new vis.DataSet();
+const counters = document.querySelectorAll('.counter');
 
-    graphData.nodes.forEach(node => {
+counters.forEach(counter => {
+    const update = () => {
+        const target = +counter.getAttribute('data-target');
+        const current = +counter.innerText;
 
-        let risk = graphData.risk_map[node] || 0;
-        let color = "green";
+        const increment = target / 50;
 
-        if (risk >= 80) {
-            color = "red";
-        } else if (risk >= 40) {
-            color = "orange";
-        }
-
-        nodes.add({
-            id: node,
-            label: node,
-            color: color
-        });
-    });
-
-    graphData.edges.forEach(edge => {
-        edges.add({
-            from: edge[0],
-            to: edge[1]
-        });
-    });
-
-    let container = document.getElementById("network");
-    let data = { nodes: nodes, edges: edges };
-
-    let options = {
-        nodes: {
-            shape: "dot",
-            size: 18,
-            font: { size: 14 }
-        },
-        edges: {
-            arrows: "to"
-        },
-        physics: {
-            stabilization: false
+        if (current < target) {
+            counter.innerText = Math.ceil(current + increment);
+            setTimeout(update, 20);
+        } else {
+            counter.innerText = target;
         }
     };
 
-    new vis.Network(container, data, options);
+    update();
+});
+
+
+/* ================= GRAPH ================= */
+
+const graphData = {{ graph_data | tojson }};
+let nodes = new vis.DataSet();
+let edges = new vis.DataSet();
+
+let fraudCount = 0;
+let mediumCount = 0;
+let safeCount = 0;
+
+graphData.nodes.forEach(node => {
+
+    let risk = graphData.risk_map[node] || 0;
+    let color = "#00cc66";
+
+    if (risk >= 80) {
+        color = "#ff3b3b";
+        fraudCount++;
+    } else if (risk >= 40) {
+        color = "#ffcc00";
+        mediumCount++;
+    } else {
+        safeCount++;
+    }
+
+    nodes.add({
+        id: node,
+        label: node,
+        color: {
+            background: color,
+            border: "#ffffff"
+        }
+    });
+});
+
+graphData.edges.forEach(edge => {
+    edges.add({
+        from: edge[0],
+        to: edge[1]
+    });
+});
+
+new vis.Network(
+    document.getElementById("network"),
+    { nodes: nodes, edges: edges },
+    {
+        nodes: {
+            shape: "dot",
+            size: 18,
+            font: { color: "white" }
+        },
+        edges: {
+            arrows: "to",
+            color: { color: "#aaa" }
+        },
+        physics: { stabilization: false }
+    }
+);
+
+
+/* ================= PIE CHART ================= */
+
+const ctx = document.getElementById('riskChart');
+
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Fraud', 'Medium', 'Safe'],
+        datasets: [{
+            data: [fraudCount, mediumCount, safeCount],
+            backgroundColor: [
+                '#ff3b3b',
+                '#ffcc00',
+                '#00cc66'
+            ]
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                labels: { color: 'white' }
+            }
+        }
+    }
+});
 </script>
 
 </body>
