@@ -3,6 +3,7 @@
 <head>
     <title>Detection Results</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
 </head>
 <body>
 
@@ -26,11 +27,61 @@
 <td>{{ ring.member_accounts }}</td>
 </tr>
 {% endfor %}
-
 </table>
 
 <br>
 <a href="/download">Download JSON Report</a>
 
+<hr>
+
+<h2>Transaction Graph</h2>
+
+<div id="network" style="height: 600px; border: 1px solid white;"></div>
+
+<script>
+    const graphData = {{ graph_data | tojson }};
+    const suspiciousAccounts = {{ suspicious_accounts | tojson }};
+
+    let suspiciousSet = new Set(
+        suspiciousAccounts.map(acc => acc.account_id)
+    );
+
+    let nodes = graphData.nodes.map(node => ({
+        id: node,
+        label: node,
+        color: suspiciousSet.has(node) ? "red" : "#22c55e"
+    }));
+
+    let edges = graphData.edges.map(edge => ({
+        from: edge[0],
+        to: edge[1],
+        arrows: "to"
+    }));
+
+    const container = document.getElementById("network");
+
+    const data = {
+        nodes: new vis.DataSet(nodes),
+        edges: new vis.DataSet(edges)
+    };
+
+    const options = {
+        nodes: {
+            shape: "dot",
+            size: 15,
+            font: { color: "white" }
+        },
+        edges: {
+            color: "white"
+        },
+        physics: {
+            stabilization: true
+        }
+    };
+
+    new vis.Network(container, data, options);
+</script>
+
 </body>
 </html>
+
