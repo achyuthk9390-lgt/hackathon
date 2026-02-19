@@ -7,8 +7,6 @@
 </head>
 <body>
 
-<div class="background"></div>
-
 <div class="container">
     <div class="card">
         <h1>💰 Financial Crime Detection Engine</h1>
@@ -16,23 +14,37 @@
             AI-Powered Graph-Based Money Muling Detection System
         </p>
 
-        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+        <form action="/upload" method="POST" enctype="multipart/form-data">
 
             <label for="file-upload" class="file-label">
-                📂 Drag & Drop CSV Here <br>
+                📂 Drag & Drop CSV Here
+                <br>
                 <span>or click to browse</span>
             </label>
 
             <input type="file" name="file" id="file-upload" required>
+
+            <!-- FILE NAME DISPLAY -->
+            <p id="file-name" class="file-name"></p>
 
             <button type="submit" class="analyze-btn">
                 🚀 Analyze Transactions
             </button>
 
         </form>
-
     </div>
 </div>
+
+<script>
+    const fileInput = document.getElementById("file-upload");
+    const fileNameDisplay = document.getElementById("file-name");
+
+    fileInput.addEventListener("change", function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = "📄 Selected: " + this.files[0].name;
+        }
+    });
+</script>
 
 </body>
 </html>
