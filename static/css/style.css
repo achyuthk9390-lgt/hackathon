@@ -1,28 +1,95 @@
+/* Background Animation */
 body {
-    background-color: #0f172a;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1c1c1c);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
     color: white;
-    font-family: Arial;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Container */
+.container {
     text-align: center;
 }
 
-.container {
-    margin-top: 120px;
+/* Glass Card */
+.card {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    width: 400px;
+    transition: 0.3s ease;
 }
 
-button {
-    padding: 10px 20px;
-    background: #22c55e;
-    border: none;
-    color: white;
+.card:hover {
+    transform: scale(1.02);
+}
+
+/* Title */
+h1 {
+    margin-bottom: 10px;
+    font-size: 26px;
+}
+
+.subtitle {
+    font-size: 14px;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+/* Upload Area */
+.file-label {
+    display: block;
+    padding: 25px;
+    border: 2px dashed #00d4ff;
+    border-radius: 12px;
     cursor: pointer;
+    transition: 0.3s ease;
+    margin-bottom: 20px;
 }
 
-table {
-    margin: auto;
-    border-collapse: collapse;
+.file-label:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: #00ffcc;
 }
 
-td, th {
-    border: 1px solid white;
-    padding: 8px;
+.file-label span {
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* Hide default input */
+input[type="file"] {
+    display: none;
+}
+
+/* Button */
+.analyze-btn {
+    background: linear-gradient(90deg, #00d4ff, #00ffcc);
+    border: none;
+    padding: 12px 25px;
+    font-size: 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    color: black;
+    font-weight: bold;
+}
+
+.analyze-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #00ffcc;
 }
