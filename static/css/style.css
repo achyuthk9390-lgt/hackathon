@@ -1,95 +1,90 @@
-/* Background Animation */
-body {
+body.dark-theme {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1c1c1c);
-    background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: white;
 }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+.dashboard {
+    padding: 40px;
+    max-width: 1300px;
+    margin: auto;
 }
 
-/* Container */
-.container {
+.title {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 32px;
+}
+
+/* ================= GLASS CARDS ================= */
+
+.glass-card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    margin-bottom: 30px;
+}
+
+.large-card {
+    padding: 40px;
+}
+
+.card-grid {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card-grid .glass-card {
+    flex: 1;
     text-align: center;
 }
 
-/* Glass Card */
-.card {
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.08);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    width: 400px;
-    transition: 0.3s ease;
+.red-glass {
+    background: rgba(255, 0, 0, 0.15);
 }
 
-.card:hover {
-    transform: scale(1.02);
+.yellow-glass {
+    background: rgba(255, 204, 0, 0.15);
 }
 
-/* Title */
-h1 {
+.counter {
+    font-size: 32px;
+    margin-top: 10px;
+}
+
+/* ================= GRAPH ================= */
+
+#network {
+    height: 500px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+/* ================= LEGEND ================= */
+
+.legend {
+    display: flex;
+    gap: 20px;
     margin-bottom: 10px;
-    font-size: 26px;
 }
 
-.subtitle {
-    font-size: 14px;
-    margin-bottom: 30px;
-    color: #ccc;
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Upload Area */
-.file-label {
-    display: block;
-    padding: 25px;
-    border: 2px dashed #00d4ff;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.3s ease;
-    margin-bottom: 20px;
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
 }
 
-.file-label:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: #00ffcc;
-}
+.dot.red { background: #ff3b3b; }
+.dot.yellow { background: #ffcc00; }
+.dot.green { background: #00cc66; }
 
-.file-label span {
-    font-size: 12px;
-    color: #aaa;
-}
-
-/* Hide default input */
-input[type="file"] {
-    display: none;
-}
-
-/* Button */
-.analyze-btn {
-    background: linear-gradient(90deg, #00d4ff, #00ffcc);
-    border: none;
-    padding: 12px 25px;
-    font-size: 15px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: 0.3s ease;
-    color: black;
-    font-weight: bold;
-}
-
-.analyze-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px #00ffcc;
-}
