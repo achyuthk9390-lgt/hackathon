@@ -155,7 +155,7 @@ def upload_file():
     with open(output_path, "w") as f:
         json.dump(result_json, f, indent=4)
 
-    # -------- Graph Data For Visualization -------- #
+    # -------- Graph Data -------- #
     graph_data = {
         "nodes": list(G.nodes()),
         "edges": list(G.edges())
