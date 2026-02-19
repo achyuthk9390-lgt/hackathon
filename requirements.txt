@@ -1,0 +1,4 @@
+flask
+pandas
+networkx
+gunicorn
