@@ -88,7 +88,6 @@ def upload_file():
 
     # -------- Cycle Detection -------- #
     cycles = detect_cycles(G)
-
     ring_counter = 1
 
     for cycle in cycles:
@@ -102,7 +101,7 @@ def upload_file():
         })
 
         for account in cycle:
-            suspicious_dict[account].append(f"cycle_length_{len(cycle)}")
+            suspicious_dict[account].append("cycle")
 
         ring_counter += 1
 
@@ -112,7 +111,7 @@ def upload_file():
     for account, patterns in fan_patterns.items():
         suspicious_dict[account].extend(patterns)
 
-    # -------- Build Suspicious Accounts JSON -------- #
+    # -------- Suspicious Accounts -------- #
     suspicious_accounts = []
 
     for account, patterns in suspicious_dict.items():
@@ -155,10 +154,16 @@ def upload_file():
     with open(output_path, "w") as f:
         json.dump(result_json, f, indent=4)
 
-    # -------- Graph Data -------- #
+    # -------- Graph Risk Map -------- #
+    risk_map = {}
+
+    for acc in suspicious_accounts:
+        risk_map[acc["account_id"]] = acc["suspicion_score"]
+
     graph_data = {
         "nodes": list(G.nodes()),
-        "edges": list(G.edges())
+        "edges": list(G.edges()),
+        "risk_map": risk_map
     }
 
     return render_template(
@@ -177,3 +182,4 @@ def download_file():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
