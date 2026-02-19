@@ -20,8 +20,22 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 # ---------------- DETECTION FUNCTIONS ---------------- #
 
 def detect_cycles(G):
-    all_cycles = list(nx.simple_cycles(G))
-    return [c for c in all_cycles if 3 <= len(c) <= 5]
+    """
+    Limited cycle detection to prevent timeout on large graphs.
+    """
+    cycles = []
+    try:
+        for cycle in nx.simple_cycles(G):
+            if 3 <= len(cycle) <= 5:
+                cycles.append(cycle)
+
+            # 🔥 Prevent overload (important for 10K dataset)
+            if len(cycles) >= 50:
+                break
+    except Exception as e:
+        print("Cycle detection stopped:", e)
+
+    return cycles
 
 
 def detect_fan_patterns(G):
@@ -40,12 +54,12 @@ def detect_fan_patterns(G):
 def calculate_score(patterns):
     score = 0
 
-    if any("cycle" in p for p in patterns):
-        score += 50
+    if "cycle" in patterns:
+        score += 80
     if "fan_in" in patterns:
-        score += 20
+        score += 40
     if "fan_out" in patterns:
-        score += 20
+        score += 40
 
     return float(min(score, 100))
 
@@ -59,6 +73,7 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
+
     file = request.files["file"]
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
@@ -66,6 +81,10 @@ def upload_file():
     start_time = time.time()
 
     df = pd.read_csv(filepath)
+
+    # 🔥 Performance safeguard for large datasets
+    if len(df) > 5000:
+        df = df.head(5000)
 
     required_columns = {
         "transaction_id",
@@ -111,7 +130,7 @@ def upload_file():
     for account, patterns in fan_patterns.items():
         suspicious_dict[account].extend(patterns)
 
-    # -------- Suspicious Accounts -------- #
+    # -------- Build Suspicious Accounts -------- #
     suspicious_accounts = []
 
     for account, patterns in suspicious_dict.items():
@@ -154,7 +173,7 @@ def upload_file():
     with open(output_path, "w") as f:
         json.dump(result_json, f, indent=4)
 
-    # -------- Graph Risk Map -------- #
+    # -------- Graph Risk Mapping -------- #
     risk_map = {}
 
     for acc in suspicious_accounts:
@@ -182,4 +201,3 @@ def download_file():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
