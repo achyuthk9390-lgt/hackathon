@@ -2,6 +2,10 @@
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1c1c1c);
     background-size: 400% 400%;
     animation: gradientBG 12s ease infinite;
@@ -14,96 +18,78 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-.dashboard {
-    width: 90%;
-    max-width: 1100px;
-    margin: 40px auto;
-}
-
-.page-title {
+/* Container */
+.container {
     text-align: center;
-    margin-bottom: 30px;
 }
 
+/* Glass Card */
 .card {
     backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.08);
-    padding: 25px;
+    padding: 40px;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    margin-bottom: 25px;
-}
-
-.styled-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.styled-table th,
-.styled-table td {
-    padding: 10px;
-    text-align: center;
-}
-
-.styled-table tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.styled-table th {
-    background: rgba(0, 212, 255, 0.2);
-}
-
-.badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.red {
-    background: #ff4d4d;
-    color: white;
-}
-
-.orange {
-    background: #ffa500;
-    color: black;
-}
-
-.green {
-    background: #00ff99;
-    color: black;
-}
-
-.safe-text {
-    color: #00ff99;
-    font-weight: bold;
-}
-
-#network {
-    height: 500px;
-    border-radius: 10px;
-    margin-top: 15px;
-}
-
-.download-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.download-btn {
-    background: linear-gradient(90deg, #00d4ff, #00ffcc);
-    padding: 12px 25px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: bold;
-    color: black;
+    width: 400px;
     transition: 0.3s ease;
 }
 
-.download-btn:hover {
+.card:hover {
+    transform: scale(1.02);
+}
+
+/* Title */
+h1 {
+    margin-bottom: 10px;
+    font-size: 26px;
+}
+
+.subtitle {
+    font-size: 14px;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+/* Upload Area */
+.file-label {
+    display: block;
+    padding: 25px;
+    border: 2px dashed #00d4ff;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.file-label:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: #00ffcc;
+}
+
+.file-label span {
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* Hide default input */
+input[type="file"] {
+    display: none;
+}
+
+/* Button */
+.analyze-btn {
+    background: linear-gradient(90deg, #00d4ff, #00ffcc);
+    border: none;
+    padding: 12px 25px;
+    font-size: 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    color: black;
+    font-weight: bold;
+}
+
+.analyze-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 0 15px #00ffcc;
 }
-
