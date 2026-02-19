@@ -9,6 +9,10 @@
 
 <h2>Fraud Rings Detected</h2>
 
+{% if fraud_rings|length == 0 %}
+<p>No fraud rings detected.</p>
+{% else %}
+
 <table>
 <tr>
 <th>Ring ID</th>
@@ -28,6 +32,8 @@
 </tr>
 {% endfor %}
 </table>
+
+{% endif %}
 
 <br>
 <a href="/download">Download JSON Report</a>
@@ -84,4 +90,3 @@
 
 </body>
 </html>
-
